@@ -1,5 +1,7 @@
 package com.learningspring.hogwartsartifactonline.artifact;
 
+import com.learningspring.hogwartsartifactonline.artifact.converter.ArtifactToArtifactDtoConverter;
+import com.learningspring.hogwartsartifactonline.artifact.dto.ArtifactDto;
 import com.learningspring.hogwartsartifactonline.system.Result;
 import com.learningspring.hogwartsartifactonline.system.StatusCode;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,13 +15,21 @@ public class ArtifactController {
 
     private final ArtifactService artifactService;
 
-    public ArtifactController(ArtifactService artifactService) {
+    private final ArtifactToArtifactDtoConverter artifactToArtifactDtoConverter;
+
+    public ArtifactController(ArtifactService artifactService,
+            ArtifactToArtifactDtoConverter artifactToArtifactDtoConverter) {
         this.artifactService = artifactService;
+        this.artifactToArtifactDtoConverter = artifactToArtifactDtoConverter;
     }
 
     @GetMapping("/{artifactId}")
     public Result findArtifactById(@PathVariable String artifactId) {
         Artifact foundArtifact = this.artifactService.findById(artifactId);
-        return new Result(true, StatusCode.SUCCESS, "Find One Success", foundArtifact);
+        ArtifactDto artifactDto = this.artifactToArtifactDtoConverter.convert(foundArtifact);
+        return new Result(true,
+                          StatusCode.SUCCESS,
+                          "Find One Success",
+                          artifactDto);
     }
 }
