@@ -4,6 +4,7 @@ import com.learningspring.hogwartsartifactonline.artifact.Artifact;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -16,7 +17,7 @@ public class Wizard implements Serializable {
     private String name;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "owner")
-    private List<Artifact> artifacts;
+    private List<Artifact> artifacts = new ArrayList<>();
 
     public Wizard() {
     }
@@ -43,5 +44,10 @@ public class Wizard implements Serializable {
 
     public void setArtifacts(List<Artifact> artifacts) {
         this.artifacts = artifacts;
+    }
+
+    public void addArtifact(Artifact artifact) {
+        artifact.setOwner(this);
+        this.artifacts.add(artifact);
     }
 }
