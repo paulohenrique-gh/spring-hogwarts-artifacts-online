@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/artifacts")
 public class ArtifactController {
@@ -27,9 +29,15 @@ public class ArtifactController {
     public Result findArtifactById(@PathVariable String artifactId) {
         Artifact foundArtifact = this.artifactService.findById(artifactId);
         ArtifactDto artifactDto = this.artifactToArtifactDtoConverter.convert(foundArtifact);
-        return new Result(true,
-                          StatusCode.SUCCESS,
-                          "Find One Success",
-                          artifactDto);
+        return new Result(true, StatusCode.SUCCESS, "Find One Success", artifactDto);
+    }
+
+    @GetMapping
+    public Result findAllArtifacts() {
+        List<ArtifactDto> artifactDtos = this.artifactService.findAll()
+                .stream()
+                .map(this.artifactToArtifactDtoConverter::convert)
+                .toList();
+        return new Result(true, StatusCode.SUCCESS, "Find All Success", artifactDtos);
     }
 }
