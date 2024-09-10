@@ -59,4 +59,10 @@ public class ArtifactController {
         ArtifactDto updatedArtifactDto = this.artifactToArtifactDtoConverter.convert(updatedArtifact);
         return new Result(true, StatusCode.SUCCESS, "Update Success", updatedArtifactDto);
     }
+
+    @DeleteMapping("/{artifactId}")
+    public Result deleteArtifact(@PathVariable String artifactId) {
+        this.artifactService.delete(artifactId);
+        return new Result(true, StatusCode.SUCCESS, "Delete Success");
+    }
 }
