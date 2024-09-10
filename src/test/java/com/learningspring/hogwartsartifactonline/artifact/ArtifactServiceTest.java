@@ -19,8 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ArtifactServiceTest {
@@ -182,5 +181,24 @@ class ArtifactServiceTest {
 
         // Then
         verify(artifactRepository, times(1)).findById("1250808601744904192");
+    }
+
+    @Test
+    void testDeleteSuccess() {
+        // Given
+        Artifact artifact = new Artifact();
+        artifact.setId("1250808601744904192");
+        artifact.setName("Invisibility Cloak");
+        artifact.setDescription("A new description");
+        artifact.setImageUrl("ImageUrl");
+
+        given(artifactRepository.findById("1250808601744904192")).willReturn(Optional.of(artifact));
+        doNothing().when(artifactRepository).deleteById("1250808601744904192");
+
+        // When
+        artifactService.delete(artifact.getId());
+
+        // Then
+        verify(artifactRepository, times(1)).deleteById(artifact.getId());
     }
 }
