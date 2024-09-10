@@ -201,4 +201,18 @@ class ArtifactServiceTest {
         // Then
         verify(artifactRepository, times(1)).deleteById(artifact.getId());
     }
+
+    @Test
+    void testDeleteNotFound() {
+        // Given
+        given(this.artifactRepository.findById("1250808601744904192")).willReturn(Optional.empty());
+
+        // When
+        assertThrows(ArtifactNotFoundException.class, () -> {
+            this.artifactService.delete("1250808601744904192");
+        });
+
+        // Then
+        verify(this.artifactRepository, times(1)).findById("1250808601744904192");
+    }
 }
