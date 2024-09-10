@@ -26,7 +26,7 @@ public class ExceptionHandlerAdvice {
 
 
     /**
-     * This handles invalid inputs
+     * This handles invalid inputs exception thrown by @Valid
      *
      * @param ex
      * @return Result

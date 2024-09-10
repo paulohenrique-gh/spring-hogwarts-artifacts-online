@@ -194,5 +194,25 @@ class ArtifactControllerTest {
                 .andExpect(jsonPath("$.data.imageUrl").value(updatedArtifact.getImageUrl()));
     }
 
+    @Test
+    void testUpdateArtifactErrorWithNonExistentId() throws Exception {
+        // Given
+        ArtifactDto artifactDto = new ArtifactDto("1250808601744904192",
+                                                  "Invisibility Cloak",
+                                                  "Invisibility Cloak",
+                                                  "ImageUrl",
+                                                  null);
+        String json = this.objectMapper.writeValueAsString(artifactDto);
+
+        given(this.artifactService.update(eq("1250808601744904192"), Mockito.any(Artifact.class))).willThrow(new ArtifactNotFoundException("1250808601744904192"));
+
+        // When and then
+        this.mockMvc.perform(put("/api/v1/artifacts/1250808601744904192").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("Could not find artifact with Id 1250808601744904192 :("))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
 }
 
