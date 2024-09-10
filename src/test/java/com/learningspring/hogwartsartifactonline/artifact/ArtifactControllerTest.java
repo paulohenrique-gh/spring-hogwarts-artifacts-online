@@ -1,5 +1,6 @@
 package com.learningspring.hogwartsartifactonline.artifact;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.learningspring.hogwartsartifactonline.artifact.dto.ArtifactDto;
 import com.learningspring.hogwartsartifactonline.system.StatusCode;
@@ -19,9 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
@@ -163,5 +164,35 @@ class ArtifactControllerTest {
                 .andExpect(jsonPath("$.data.description").value(savedArtifact.getDescription()))
                 .andExpect(jsonPath("$.data.imageUrl").value(savedArtifact.getImageUrl()));
     }
+
+    @Test
+    void testUpdateArtifactSuccess() throws Exception {
+        // Given
+        ArtifactDto artifactDto = new ArtifactDto("1250808601744904192",
+                                                  "Invisibility Cloak",
+                                                  "Invisibility Cloak",
+                                                  "ImageUrl",
+                                                  null);
+        String json = this.objectMapper.writeValueAsString(artifactDto);
+
+        Artifact updatedArtifact = new Artifact();
+        updatedArtifact.setId("1250808601744904192");
+        updatedArtifact.setName("Invisibility Cloak");
+        updatedArtifact.setDescription("A new description");
+        updatedArtifact.setImageUrl("ImageUrl");
+
+        given(this.artifactService.update(eq("1250808601744904192"), Mockito.any(Artifact.class))).willReturn(updatedArtifact);
+
+        // When and then
+        this.mockMvc.perform(put("/api/v1/artifacts/1250808601744904192").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Update Success"))
+                .andExpect(jsonPath("$.data.id").value("1250808601744904192"))
+                .andExpect(jsonPath("$.data.name").value(updatedArtifact.getName()))
+                .andExpect(jsonPath("$.data.description").value(updatedArtifact.getDescription()))
+                .andExpect(jsonPath("$.data.imageUrl").value(updatedArtifact.getImageUrl()));
+    }
+
 }
 
