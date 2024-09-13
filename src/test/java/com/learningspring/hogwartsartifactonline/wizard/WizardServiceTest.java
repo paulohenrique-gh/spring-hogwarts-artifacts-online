@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -70,6 +71,21 @@ public class WizardServiceTest {
         assertThat(returnedWizard.getId()).isEqualTo(1);
         assertThat(returnedWizard.getName()).isEqualTo("Harry");
         assertThat(returnedWizard.getArtifacts()).hasSize(2);
+        verify(this.wizardRepository, times(1)).findById(1);
+    }
+
+    @Test
+    void testFindByIdNotFound() {
+        // Given
+        given(this.wizardRepository.findById(1)).willReturn(Optional.empty());
+
+        // When
+        Throwable thrown = catchThrowable(() -> this.wizardService.findById(1));
+
+        // Then
+        assertThat(thrown)
+                .isInstanceOf(WizardNotFoundException.class)
+                .hasMessage("Could not find wizard with Id 1 :(");
         verify(this.wizardRepository, times(1)).findById(1);
     }
 
