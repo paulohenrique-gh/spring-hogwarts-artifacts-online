@@ -14,6 +14,6 @@ public class WizardService {
     }
 
     public Wizard findById(Integer id) {
-        return this.wizardRepository.findById(id).get();
+        return this.wizardRepository.findById(id).orElseThrow(() -> new WizardNotFoundException(id));
     }
 }
