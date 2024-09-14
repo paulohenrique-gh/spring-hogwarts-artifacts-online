@@ -28,7 +28,7 @@ public class WizardServiceTest {
     @InjectMocks
     WizardService wizardService;
 
-    List<Artifact> artifacts;
+    List<Wizard> wizards = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
@@ -44,9 +44,29 @@ public class WizardServiceTest {
         a2.setDescription("An invisibility cloak is used to make the wearer invisible.");
         a2.setImageUrl("imageUrl");
 
-        this.artifacts = new ArrayList<>();
-        this.artifacts.add(a1);
-        this.artifacts.add(a2);
+        Artifact a3 = new Artifact();
+        a3.setId("1250808601744904193");
+        a3.setName("Elder Wand");
+        a3.setDescription("The Elder Wand, known throughout history as the Deathstick or the Wand of Destiny, is an extremely powerful wand made of elder wood with a core of Thestral tail hair.");
+        a3.setImageUrl("ImageUrl");
+
+        Artifact a4 = new Artifact();
+        a4.setId("1250808601744904194");
+        a4.setName("The Marauder's Map");
+        a4.setDescription("A magical map of Hogwarts created by Remus Lupin, Peter Pettigrew, Sirius Black, and James Potter while they were students at Hogwarts.");
+        a4.setImageUrl("ImageUrl");
+
+        Wizard w1 = new Wizard();
+        w1.setId(1);
+        w1.setName("Harry");
+        w1.setArtifacts(List.of(a1, a2));
+        this.wizards.add(w1);
+
+        Wizard w2 = new Wizard();
+        w2.setId(2);
+        w2.setName("Potter");
+        w2.setArtifacts(List.of(a3, a4));
+        this.wizards.add(w2);
     }
 
     @AfterEach
@@ -57,10 +77,7 @@ public class WizardServiceTest {
     @Test
     void testFindByIdSuccess() {
         // Given
-        Wizard w = new Wizard();
-        w.setId(1);
-        w.setName("Harry");
-        w.setArtifacts(this.artifacts);
+        Wizard w = this.wizards.get(0);
 
         given(this.wizardRepository.findById(1)).willReturn(Optional.of(w));
 
@@ -87,6 +104,19 @@ public class WizardServiceTest {
                 .isInstanceOf(WizardNotFoundException.class)
                 .hasMessage("Could not find wizard with Id 1 :(");
         verify(this.wizardRepository, times(1)).findById(1);
+    }
+
+    @Test
+    void testFindAllSuccess() {
+        // Given
+        given(this.wizardRepository.findAll()).willReturn(this.wizards);
+
+        // When
+        List<Wizard> actualWizards = this.wizardService.findAll();
+
+        // Then
+        assertThat(actualWizards.size()).isEqualTo(this.wizards.size());
+        verify(this.wizardRepository, times(1)).findAll();
     }
 
 }
