@@ -25,6 +25,8 @@ public class ExceptionHandlerAdvice {
         return new Result(false, StatusCode.NOT_FOUND, ex.getMessage());
     }
 
+    @ExceptionHandler(WizardNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     Result handleWizardNotFoundException(WizardNotFoundException ex) {
         return new Result(false, StatusCode.NOT_FOUND, ex.getMessage());
     }
