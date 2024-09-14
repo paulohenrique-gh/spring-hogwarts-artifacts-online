@@ -107,4 +107,36 @@ public class WizardControllerTest {
                 .andExpect(jsonPath("$.data.name").value("Harry"))
                 .andExpect(jsonPath("$.data.numberOfArtifacts").value(3));
     }
+
+    @Test
+    void testFindWizardByIdNotFound() throws Exception {
+        // Given
+        given(this.wizardService.findById(1)).willThrow(new WizardNotFoundException(1));
+
+        // When and then
+        this.mockMvc.perform(get("/api/v1/wizards/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("Could not find wizard with Id 1 :("))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    void testFindAllWizardsSuccess() throws Exception {
+        // Given
+        given(this.wizardService.findAll()).willReturn(this.wizards);
+
+
+        // When and then
+        this.mockMvc.perform(get("/api/v1/wizards").accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Find All Success"))
+                .andExpect(jsonPath("$.data[0].id").value(1))
+                .andExpect(jsonPath("$.data[0].name").value("Harry"))
+                .andExpect(jsonPath("$.data[0].numberOfArtifacts").value(3))
+                .andExpect(jsonPath("$.data[1].id").value(2))
+                .andExpect(jsonPath("$.data[1].name").value("Potter"))
+                .andExpect(jsonPath("$.data[1].numberOfArtifacts").value(3));
+    }
 }
