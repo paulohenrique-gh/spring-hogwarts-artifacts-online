@@ -1,6 +1,7 @@
 package com.learningspring.hogwartsartifactonline.wizard;
 
 import com.learningspring.hogwartsartifactonline.artifact.Artifact;
+import com.learningspring.hogwartsartifactonline.artifact.utils.IdWorker;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -117,6 +118,25 @@ public class WizardServiceTest {
         // Then
         assertThat(actualWizards.size()).isEqualTo(this.wizards.size());
         verify(this.wizardRepository, times(1)).findAll();
+    }
+
+    @Test
+    void testSaveSuccess() {
+        // Given
+        Wizard newWizard = new Wizard();
+        newWizard.setId(1);
+        newWizard.setName("Harry");
+
+        given(this.wizardRepository.save(newWizard)).willReturn(newWizard);
+
+        // When
+        Wizard savedWizard = this.wizardService.save(newWizard);
+
+        // Then
+        assertThat(savedWizard.getId()).isEqualTo(1);
+        assertThat(savedWizard.getName()).isEqualTo("Harry");
+        assertThat(savedWizard.getArtifacts()).isEmpty();
+        verify(this.wizardRepository, times(1)).save(newWizard);
     }
 
 }
