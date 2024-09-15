@@ -2,12 +2,11 @@ package com.learningspring.hogwartsartifactonline.wizard;
 
 import com.learningspring.hogwartsartifactonline.system.Result;
 import com.learningspring.hogwartsartifactonline.system.StatusCode;
+import com.learningspring.hogwartsartifactonline.wizard.converter.WizardDtoToWizardConverter;
 import com.learningspring.hogwartsartifactonline.wizard.converter.WizardToWizardDtoConverter;
 import com.learningspring.hogwartsartifactonline.wizard.dto.WizardDto;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -19,10 +18,14 @@ public class WizardController {
 
     private final WizardToWizardDtoConverter wizardToWizardDtoConverter;
 
+    private final WizardDtoToWizardConverter wizardDtoToWizardConverter;
+
     public WizardController(WizardService wizardService,
-            WizardToWizardDtoConverter wizardToWizardDtoConverter) {
+            WizardToWizardDtoConverter wizardToWizardDtoConverter,
+            WizardDtoToWizardConverter wizardDtoToWizardConverter) {
         this.wizardService = wizardService;
         this.wizardToWizardDtoConverter = wizardToWizardDtoConverter;
+        this.wizardDtoToWizardConverter = wizardDtoToWizardConverter;
     }
 
     @GetMapping("/{wizardId}")
@@ -39,5 +42,13 @@ public class WizardController {
                 .map(this.wizardToWizardDtoConverter::convert)
                 .toList();
         return new Result(true, StatusCode.SUCCESS, "Find All Success", wizardDtos);
+    }
+
+    @PostMapping
+    public Result addWizard(@RequestBody @Valid WizardDto wizardDto) {
+        Wizard newWizard = this.wizardDtoToWizardConverter.convert(wizardDto);
+        Wizard savedWizard = this.wizardService.save(newWizard);
+        WizardDto savedWizardDto = this.wizardToWizardDtoConverter.convert(savedWizard);
+        return new Result(true, StatusCode.SUCCESS, "Add Success", savedWizardDto);
     }
 }
