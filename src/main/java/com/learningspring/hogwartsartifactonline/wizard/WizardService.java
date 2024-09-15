@@ -20,4 +20,8 @@ public class WizardService {
     public List<Wizard> findAll() {
         return this.wizardRepository.findAll();
     }
+
+    public Wizard save(Wizard newWizard) {
+        return this.wizardRepository.save(newWizard);
+    }
 }
