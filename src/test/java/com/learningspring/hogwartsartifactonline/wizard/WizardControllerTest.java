@@ -1,11 +1,14 @@
 package com.learningspring.hogwartsartifactonline.wizard;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.learningspring.hogwartsartifactonline.artifact.Artifact;
 import com.learningspring.hogwartsartifactonline.system.StatusCode;
+import com.learningspring.hogwartsartifactonline.wizard.dto.WizardDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +21,7 @@ import java.util.List;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
@@ -138,5 +142,27 @@ public class WizardControllerTest {
                 .andExpect(jsonPath("$.data[1].id").value(2))
                 .andExpect(jsonPath("$.data[1].name").value("Potter"))
                 .andExpect(jsonPath("$.data[1].numberOfArtifacts").value(3));
+    }
+
+    @Test
+    void testAddArtifactSuccess() throws Exception {
+        // Given
+        WizardDto wizardDto = new WizardDto(null, "Harry Potter", null);
+        String json = this.objectMapper.writeValueAsString(wizardDto);
+
+        Wizard savedWizard = new Wizard();
+        savedWizard.setId(1);
+        savedWizard.setName("Harry Potter");
+
+        given(this.wizardService.save(Mockito.any(Wizard.class))).willReturn(savedWizard);
+
+        // When and then
+        this.mockMvc.perform(post("/api/v1/wizards").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Add Success"))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.name").value("Harry Potter"));
+
     }
 }
