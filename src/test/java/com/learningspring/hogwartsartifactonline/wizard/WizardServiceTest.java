@@ -139,4 +139,28 @@ public class WizardServiceTest {
         verify(this.wizardRepository, times(1)).save(newWizard);
     }
 
+    @Test
+    void testUpdateSuccess() {
+        // Given
+        Wizard oldWizard = new Wizard();
+        oldWizard.setId(1);
+        oldWizard.setName("Harry");
+
+        Wizard update = new Wizard();
+        update.setId(1);
+        update.setName("Potter");
+
+        given(this.wizardRepository.findById(1)).willReturn(Optional.of(oldWizard));
+        given(this.wizardRepository.save(oldWizard)).willReturn(oldWizard);
+
+        // When
+        Wizard updatedWizard = this.wizardService.update(1, update);
+
+        // Then
+        assertThat(updatedWizard.getId()).isEqualTo(1);
+        assertThat(updatedWizard.getName()).isEqualTo("Potter");
+        verify(this.wizardRepository, times(1)).findById(1);
+        verify(this.wizardRepository, times(1)).save(update);
+    }
+
 }
