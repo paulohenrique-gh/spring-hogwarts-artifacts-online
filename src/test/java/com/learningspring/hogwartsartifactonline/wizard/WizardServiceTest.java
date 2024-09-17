@@ -160,7 +160,7 @@ public class WizardServiceTest {
         assertThat(updatedWizard.getId()).isEqualTo(1);
         assertThat(updatedWizard.getName()).isEqualTo("Potter");
         verify(this.wizardRepository, times(1)).findById(1);
-        verify(this.wizardRepository, times(1)).save(update);
+        verify(this.wizardRepository, times(1)).save(oldWizard);
     }
 
 }
