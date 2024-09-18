@@ -51,4 +51,12 @@ public class WizardController {
         WizardDto savedWizardDto = this.wizardToWizardDtoConverter.convert(savedWizard);
         return new Result(true, StatusCode.SUCCESS, "Add Success", savedWizardDto);
     }
+
+    @PutMapping("/{wizardId}")
+    public Result updateWizard(@PathVariable Integer wizardId, @RequestBody @Valid WizardDto wizardDto) {
+        Wizard update = this.wizardDtoToWizardConverter.convert(wizardDto);
+        Wizard updatedWizard = this.wizardService.update(wizardId, update);
+        WizardDto updatedWizardDto = this.wizardToWizardDtoConverter.convert(updatedWizard);
+        return new Result(true, StatusCode.SUCCESS, "Update Success", updatedWizardDto);
+    }
 }
