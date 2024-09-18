@@ -19,9 +19,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
@@ -145,7 +145,7 @@ public class WizardControllerTest {
     }
 
     @Test
-    void testAddArtifactSuccess() throws Exception {
+    void testAddWizardSuccess() throws Exception {
         // Given
         WizardDto wizardDto = new WizardDto(null, "Harry Potter", null);
         String json = this.objectMapper.writeValueAsString(wizardDto);
@@ -164,5 +164,28 @@ public class WizardControllerTest {
                 .andExpect(jsonPath("$.data.id").value(1))
                 .andExpect(jsonPath("$.data.name").value("Harry Potter"));
 
+    }
+
+    @Test
+    void testUpdateWizardSuccess() throws Exception {
+        // Given
+        WizardDto wizardDto = new WizardDto(1, "Harry", 0);
+        String json = this.objectMapper.writeValueAsString(wizardDto);
+
+        Wizard updatedWizard = new Wizard();
+        updatedWizard.setId(1);
+        updatedWizard.setName("Harry");
+        updatedWizard.setArtifacts(new ArrayList<>());
+
+        given(this.wizardService.update(eq(1), Mockito.any(Wizard.class))).willReturn(updatedWizard);
+
+        // When and Then
+        this.mockMvc.perform(put("/api/v1/wizards/1").accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Update Success"))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.name").value("Harry"))
+                .andExpect(jsonPath("$.data.numberOfArtifacts").value(0));
     }
 }
