@@ -33,6 +33,6 @@ public class WizardService {
 
                     return this.wizardRepository.save(oldWizard);
                 })
-                .get();
+                .orElseThrow(() -> new WizardNotFoundException(wizardId));
     }
 }
