@@ -16,6 +16,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -161,6 +162,21 @@ public class WizardServiceTest {
         assertThat(updatedWizard.getName()).isEqualTo("Potter");
         verify(this.wizardRepository, times(1)).findById(1);
         verify(this.wizardRepository, times(1)).save(oldWizard);
+    }
+
+    @Test
+    void testUpdateNotFound() {
+        // Given
+        Wizard update = new Wizard();
+        update.setName("Harry");
+
+        given(this.wizardRepository.findById(1)).willReturn(Optional.empty());
+
+        // When
+        assertThrows(WizardNotFoundException.class, () -> this.wizardService.update(1, update));
+
+        // Then
+        verify(this.wizardRepository, times(1)).findById(1);
     }
 
 }
