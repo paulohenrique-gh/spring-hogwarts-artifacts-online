@@ -188,4 +188,21 @@ public class WizardControllerTest {
                 .andExpect(jsonPath("$.data.name").value("Harry"))
                 .andExpect(jsonPath("$.data.numberOfArtifacts").value(0));
     }
+
+    @Test
+    void testUpdateWizardErrorWithNonExistentId() throws Exception {
+        // Given
+        WizardDto wizardDto = new WizardDto(1, "Harry", null);
+        String json = this.objectMapper.writeValueAsString(wizardDto);
+
+        given(this.wizardService.update(eq(1), Mockito.any(Wizard.class))).willThrow(new WizardNotFoundException(1));
+
+        // When and then
+        this.mockMvc.perform(put("/api/v1/wizards/1").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("Could not find wizard with Id 1 :("))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+    }
 }
