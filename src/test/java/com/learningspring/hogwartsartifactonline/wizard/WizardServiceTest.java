@@ -18,8 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class WizardServiceTest {
@@ -179,4 +178,32 @@ public class WizardServiceTest {
         verify(this.wizardRepository, times(1)).findById(1);
     }
 
+    @Test
+    void testDeleteSuccess() {
+        // Given
+        Wizard oldWizard = new Wizard();
+        oldWizard.setId(1);
+        oldWizard.setName("Harry");
+
+        given(this.wizardRepository.findById(1)).willReturn(Optional.of(oldWizard));
+        doNothing().when(this.wizardRepository).delete(oldWizard);
+
+        // When
+        this.wizardService.delete(1);
+
+        // Then
+        verify(this.wizardRepository, times(1)).findById(1);
+    }
+
+    @Test
+    void testDeleteNotFound() {
+        // Given
+        given(this.wizardRepository.findById(1)).willReturn(Optional.empty());
+
+        // When
+        assertThrows(WizardNotFoundException.class, () -> this.wizardService.delete(1));
+
+        // Then
+        verify(this.wizardRepository, times(1)).findById(1);
+    }
 }
