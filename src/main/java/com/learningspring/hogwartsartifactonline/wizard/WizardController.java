@@ -32,7 +32,7 @@ public class WizardController {
     public Result findWizardById(@PathVariable Integer wizardId) {
         Wizard foundWizard = this.wizardService.findById(wizardId);
         WizardDto wizardDto = this.wizardToWizardDtoConverter.convert(foundWizard);
-        return new Result(true, StatusCode.SUCCESS, "Found One Success", wizardDto);
+        return new Result(true, StatusCode.SUCCESS, "Find One Success", wizardDto);
     }
 
     @GetMapping
@@ -58,5 +58,11 @@ public class WizardController {
         Wizard updatedWizard = this.wizardService.update(wizardId, update);
         WizardDto updatedWizardDto = this.wizardToWizardDtoConverter.convert(updatedWizard);
         return new Result(true, StatusCode.SUCCESS, "Update Success", updatedWizardDto);
+    }
+
+    @DeleteMapping("/{wizardId}")
+    public Result deleteWizard(@PathVariable Integer wizardId) {
+        this.wizardService.delete(wizardId);
+        return new Result(true, StatusCode.SUCCESS, "Delete Success");
     }
 }

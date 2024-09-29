@@ -21,6 +21,8 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -204,5 +206,30 @@ public class WizardControllerTest {
                 .andExpect(jsonPath("$.message").value("Could not find wizard with Id 1 :("))
                 .andExpect(jsonPath("$.data").isEmpty());
 
+    }
+
+    @Test
+    void testDeleteWizardSuccess() throws Exception {
+        // Given
+        doNothing().when(this.wizardService).delete(1);
+
+        // When and then
+        this.mockMvc.perform(delete("/api/v1/wizards/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Delete Success"))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    void testDeleteWizardErrorWithNonExistentId() throws Exception {
+        // Given
+        doThrow(new WizardNotFoundException(1)).when(this.wizardService).delete(1);
+
+        // When and then
+        this.mockMvc.perform(delete("/api/v1/wizards/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("Could not find wizard with Id 1 :("));
     }
 }
