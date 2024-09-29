@@ -1,6 +1,5 @@
 package com.learningspring.hogwartsartifactonline.artifact;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.learningspring.hogwartsartifactonline.artifact.dto.ArtifactDto;
 import com.learningspring.hogwartsartifactonline.system.StatusCode;
