@@ -29,8 +29,6 @@ public class WizardService {
         return this.wizardRepository.findById(wizardId)
                 .map(oldWizard -> {
                     oldWizard.setName(update.getName());
-                    oldWizard.setArtifacts(update.getArtifacts());
-
                     return this.wizardRepository.save(oldWizard);
                 })
                 .orElseThrow(() -> new WizardNotFoundException(wizardId));
@@ -39,6 +37,7 @@ public class WizardService {
     public void delete(Integer wizardId) {
         Wizard wizard = this.wizardRepository.findById(wizardId)
                 .orElseThrow(() -> new WizardNotFoundException(wizardId));
+        wizard.removeAllArtifacts();
         this.wizardRepository.delete(wizard);
     }
 }

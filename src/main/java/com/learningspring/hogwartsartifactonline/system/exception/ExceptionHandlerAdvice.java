@@ -19,18 +19,11 @@ import java.util.Map;
 @RestControllerAdvice
 public class ExceptionHandlerAdvice {
 
-    @ExceptionHandler(ArtifactNotFoundException.class)
+    @ExceptionHandler({ArtifactNotFoundException.class, WizardNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    Result handleArtifactNotFoundException(ArtifactNotFoundException ex) {
+    Result handleArtifactOrWizardNotFoundException(Exception ex) {
         return new Result(false, StatusCode.NOT_FOUND, ex.getMessage());
     }
-
-    @ExceptionHandler(WizardNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    Result handleWizardNotFoundException(WizardNotFoundException ex) {
-        return new Result(false, StatusCode.NOT_FOUND, ex.getMessage());
-    }
-
 
     /**
      * This handles invalid inputs exception thrown by @Valid
