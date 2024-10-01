@@ -1,5 +1,6 @@
 package com.learningspring.hogwartsartifactonline.wizard;
 
+import com.learningspring.hogwartsartifactonline.system.exception.ObjectNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,7 +15,7 @@ public class WizardService {
     }
 
     public Wizard findById(Integer id) {
-        return this.wizardRepository.findById(id).orElseThrow(() -> new WizardNotFoundException(id));
+        return this.wizardRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("wizard", id));
     }
 
     public List<Wizard> findAll() {
@@ -31,12 +32,12 @@ public class WizardService {
                     oldWizard.setName(update.getName());
                     return this.wizardRepository.save(oldWizard);
                 })
-                .orElseThrow(() -> new WizardNotFoundException(wizardId));
+                .orElseThrow(() -> new ObjectNotFoundException("wizard", wizardId));
     }
 
     public void delete(Integer wizardId) {
         Wizard wizard = this.wizardRepository.findById(wizardId)
-                .orElseThrow(() -> new WizardNotFoundException(wizardId));
+                .orElseThrow(() -> new ObjectNotFoundException("wizard", wizardId));
         wizard.removeAllArtifacts();
         this.wizardRepository.delete(wizard);
     }

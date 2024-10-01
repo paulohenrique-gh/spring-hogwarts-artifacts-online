@@ -2,6 +2,7 @@ package com.learningspring.hogwartsartifactonline.wizard;
 
 import com.learningspring.hogwartsartifactonline.artifact.Artifact;
 import com.learningspring.hogwartsartifactonline.artifact.utils.IdWorker;
+import com.learningspring.hogwartsartifactonline.system.exception.ObjectNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -102,7 +103,7 @@ public class WizardServiceTest {
 
         // Then
         assertThat(thrown)
-                .isInstanceOf(WizardNotFoundException.class)
+                .isInstanceOf(ObjectNotFoundException.class)
                 .hasMessage("Could not find wizard with Id 1 :(");
         verify(this.wizardRepository, times(1)).findById(1);
     }
@@ -172,7 +173,7 @@ public class WizardServiceTest {
         given(this.wizardRepository.findById(1)).willReturn(Optional.empty());
 
         // When
-        assertThrows(WizardNotFoundException.class, () -> this.wizardService.update(1, update));
+        assertThrows(ObjectNotFoundException.class, () -> this.wizardService.update(1, update));
 
         // Then
         verify(this.wizardRepository, times(1)).findById(1);
@@ -201,7 +202,7 @@ public class WizardServiceTest {
         given(this.wizardRepository.findById(1)).willReturn(Optional.empty());
 
         // When
-        assertThrows(WizardNotFoundException.class, () -> this.wizardService.delete(1));
+        assertThrows(ObjectNotFoundException.class, () -> this.wizardService.delete(1));
 
         // Then
         verify(this.wizardRepository, times(1)).findById(1);
