@@ -167,4 +167,57 @@ public class WizardControllerIntegrationTest {
                 .andExpect(jsonPath("$.data.name").value("name is required."));
     }
 
+    @Test
+    @DisplayName("Check assign artifact to wizard with valid Ids (PUT)")
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    void testAssignArtifactToWizardSuccess() throws Exception {
+        this.mockMvc.perform(put(this.baseUrl + "/wizards/1/artifacts/1250808601744904196").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Artifact Assignment Success"))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        this.mockMvc.perform(get(this.baseUrl + "/wizards/1").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Find One Success"))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.name").value("Albus Dumbledore"))
+                .andExpect(jsonPath("$.data.numberOfArtifacts").value(3));
+    }
+
+    @Test
+    @DisplayName("Check assign artifact to wizard with non-existent wizard Id (PUT)")
+    void testAssignArtifactToWizardWithNonExistentWizardId() throws Exception {
+        this.mockMvc.perform(put(this.baseUrl + "/wizards/999/artifacts/1250808601744904196").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("Could not find wizard with Id 999 :("))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        this.mockMvc.perform(get(this.baseUrl + "/artifacts/1250808601744904196").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Find One Success"))
+                .andExpect(jsonPath("$.data.id").value("1250808601744904196"))
+                .andExpect(jsonPath("$.data.owner").isEmpty());
+    }
+
+    @Test
+    @DisplayName("Check assign artifact to wizard with non-existent artifact Id (PUT)")
+    void testAssignArtifactToWizardWithNonExistentArtifactId() throws Exception {
+        this.mockMvc.perform(put(this.baseUrl + "/wizards/1/artifacts/999").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("Could not find artifact with Id 999 :("))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        this.mockMvc.perform(get(this.baseUrl + "/wizards/1").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Find One Success"))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.name").value("Albus Dumbledore"))
+                .andExpect(jsonPath("$.data.numberOfArtifacts").value(2));
+    }
 }

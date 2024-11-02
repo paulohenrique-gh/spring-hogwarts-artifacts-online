@@ -208,4 +208,14 @@ public class ArtifactControllerIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Could not find artifact with Id 1250808601744904191 :("))
                 .andExpect(jsonPath("$.data").isEmpty());
     }
+
+    @Test
+    @DisplayName("Check delete an artifact with non-existent Id (DELETE)")
+    void testDeleteArtifactErrorWithNonExistentId() throws Exception {
+        this.mockMvc.perform(delete(this.baseUrl + "/artifacts/1").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("Could not find artifact with Id 1 :("))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
 }
