@@ -1,6 +1,5 @@
 package com.learningspring.hogwartsartifactonline.wizard;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.learningspring.hogwartsartifactonline.system.StatusCode;
 import com.learningspring.hogwartsartifactonline.wizard.dto.WizardDto;
@@ -45,7 +44,7 @@ public class WizardControllerIntegrationTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        ResultActions resultActions = this.mockMvc.perform(post(this.baseUrl + "/users/login").with(httpBasic("john", "123456")));
+        ResultActions resultActions = this.mockMvc.perform(post(this.baseUrl + "/users/login").with(httpBasic("eric", "654321")));
         MvcResult mvcResult = resultActions.andDo(print()).andReturn();
         String contentAsString = mvcResult.getResponse().getContentAsString();
         JSONObject jsonObject = new JSONObject(contentAsString);
@@ -219,5 +218,32 @@ public class WizardControllerIntegrationTest {
                 .andExpect(jsonPath("$.data.id").value(1))
                 .andExpect(jsonPath("$.data.name").value("Albus Dumbledore"))
                 .andExpect(jsonPath("$.data.numberOfArtifacts").value(2));
+    }
+
+    @Test
+    @DisplayName("Check delete wizard with valid Id (DELETE)")
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    void testDeleteWizardSuccess() throws Exception {
+        this.mockMvc.perform(delete(this.baseUrl + "/wizards/1").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Delete Success"))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        this.mockMvc.perform(get(this.baseUrl + "/wizards/1").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("Could not find wizard with Id 1 :("))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    @DisplayName("Check delete wizard with non-existent Id (DELETE)")
+    void testDeleteWizardWithNonExistentId() throws Exception {
+        this.mockMvc.perform(delete(this.baseUrl + "/wizards/999").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("Could not find wizard with Id 999 :("))
+                .andExpect(jsonPath("$.data").isEmpty());
     }
 }
