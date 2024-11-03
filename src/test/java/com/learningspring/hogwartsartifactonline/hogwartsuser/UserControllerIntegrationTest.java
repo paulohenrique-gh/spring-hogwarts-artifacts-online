@@ -39,8 +39,6 @@ public class UserControllerIntegrationTest {
 
     String adminToken;
 
-    String userToken;
-
     @Value("${api.endpoint.base-url}")
     String baseUrl;
 
@@ -51,17 +49,11 @@ public class UserControllerIntegrationTest {
         String adminContentAsString = adminMvcResult.getResponse().getContentAsString();
         JSONObject adminJson = new JSONObject(adminContentAsString);
         this.adminToken = "Bearer " + adminJson.getJSONObject("data").getString("token");
-
-
-        ResultActions userResultActions = this.mockMvc.perform(post(this.baseUrl + "/users/login").with(httpBasic("eric", "654321")));
-        MvcResult userMvcResult = userResultActions.andDo(print()).andReturn();
-        String userContentAsString = userMvcResult.getResponse().getContentAsString();
-        JSONObject userJson = new JSONObject(userContentAsString);
-        this.userToken = "Bearer " + userJson.getJSONObject("data").getString("token");
     }
 
     @Test
     @DisplayName("Admin role: Check get all users (GET)")
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     void testFindAllUsersSuccess() throws Exception {
         this.mockMvc.perform(get(this.baseUrl + "/users").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.adminToken))
                 .andExpect(jsonPath("$.flag").value(true))
@@ -73,7 +65,13 @@ public class UserControllerIntegrationTest {
     @Test
     @DisplayName("User role: Check get all users (GET)")
     void testFindAllUsersForbidden() throws Exception {
-        this.mockMvc.perform(get(this.baseUrl + "/users").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.userToken))
+        ResultActions userResultActions = this.mockMvc.perform(post(this.baseUrl + "/users/login").with(httpBasic("eric", "654321")));
+        MvcResult userMvcResult = userResultActions.andDo(print()).andReturn();
+        String userContentAsString = userMvcResult.getResponse().getContentAsString();
+        JSONObject userJson = new JSONObject(userContentAsString);
+        String userToken = "Bearer " + userJson.getJSONObject("data").getString("token");
+
+        this.mockMvc.perform(get(this.baseUrl + "/users").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, userToken))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.FORBIDDEN))
                 .andExpect(jsonPath("$.message").value("No permission"))
@@ -106,7 +104,13 @@ public class UserControllerIntegrationTest {
     @Test
     @DisplayName("User role: Check get user by id (GET)")
     void testFindUserByIdForbidden() throws Exception {
-        this.mockMvc.perform(get(this.baseUrl + "/users/1").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.userToken))
+        ResultActions userResultActions = this.mockMvc.perform(post(this.baseUrl + "/users/login").with(httpBasic("eric", "654321")));
+        MvcResult userMvcResult = userResultActions.andDo(print()).andReturn();
+        String userContentAsString = userMvcResult.getResponse().getContentAsString();
+        JSONObject userJson = new JSONObject(userContentAsString);
+        String userToken = "Bearer " + userJson.getJSONObject("data").getString("token");
+
+        this.mockMvc.perform(get(this.baseUrl + "/users/1").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, userToken))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.FORBIDDEN))
                 .andExpect(jsonPath("$.message").value("No permission"))
@@ -115,7 +119,7 @@ public class UserControllerIntegrationTest {
 
     @Test
     @DisplayName("Admin role: Check add user with valid input (POST)")
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     void testAddUserSuccess() throws Exception {
         HogwartsUser newUser = new HogwartsUser();
         newUser.setUsername("hermione");
@@ -143,6 +147,7 @@ public class UserControllerIntegrationTest {
 
     @Test
     @DisplayName("Admin role: Check add user with invalid input (POST)")
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     void testAddUserErrorWithInvalidInput() throws Exception {
         HogwartsUser newUser = new HogwartsUser();
         newUser.setUsername("");
@@ -169,6 +174,12 @@ public class UserControllerIntegrationTest {
     @Test
     @DisplayName("User role: Check add user (POST)")
     void testAddUserForbidden() throws Exception {
+        ResultActions userResultActions = this.mockMvc.perform(post(this.baseUrl + "/users/login").with(httpBasic("eric", "654321")));
+        MvcResult userMvcResult = userResultActions.andDo(print()).andReturn();
+        String userContentAsString = userMvcResult.getResponse().getContentAsString();
+        JSONObject userJson = new JSONObject(userContentAsString);
+        String userToken = "Bearer " + userJson.getJSONObject("data").getString("token");
+
         HogwartsUser newUser = new HogwartsUser();
         newUser.setUsername("hermione");
         newUser.setPassword("hermione123");
@@ -177,7 +188,7 @@ public class UserControllerIntegrationTest {
 
         String json = this.objectMapper.writeValueAsString(newUser);
 
-        this.mockMvc.perform(post(this.baseUrl + "/users").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.userToken))
+        this.mockMvc.perform(post(this.baseUrl + "/users").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, userToken))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.FORBIDDEN))
                 .andExpect(jsonPath("$.message").value("No permission"))
@@ -239,11 +250,17 @@ public class UserControllerIntegrationTest {
     @Test
     @DisplayName("User role: Check update user (PUT)")
     void testUpdateUserForbidden() throws Exception {
+        ResultActions userResultActions = this.mockMvc.perform(post(this.baseUrl + "/users/login").with(httpBasic("eric", "654321")));
+        MvcResult userMvcResult = userResultActions.andDo(print()).andReturn();
+        String userContentAsString = userMvcResult.getResponse().getContentAsString();
+        JSONObject userJson = new JSONObject(userContentAsString);
+        String userToken = "Bearer " + userJson.getJSONObject("data").getString("token");
+
         UserDto userDto = new UserDto(null, "tom-update", true, "user");
 
         String json = this.objectMapper.writeValueAsString(userDto);
 
-        this.mockMvc.perform(put(this.baseUrl + "/users/3").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.userToken))
+        this.mockMvc.perform(put(this.baseUrl + "/users/3").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, userToken))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.FORBIDDEN))
                 .andExpect(jsonPath("$.message").value("No permission"))
@@ -279,7 +296,13 @@ public class UserControllerIntegrationTest {
     @Test
     @DisplayName("User role: Check delete user (DELETE)")
     void testDeleteUserForbidden() throws Exception {
-        this.mockMvc.perform(delete(this.baseUrl + "/users/3").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.userToken))
+        ResultActions userResultActions = this.mockMvc.perform(post(this.baseUrl + "/users/login").with(httpBasic("eric", "654321")));
+        MvcResult userMvcResult = userResultActions.andDo(print()).andReturn();
+        String userContentAsString = userMvcResult.getResponse().getContentAsString();
+        JSONObject userJson = new JSONObject(userContentAsString);
+        String userToken = "Bearer " + userJson.getJSONObject("data").getString("token");
+
+        this.mockMvc.perform(delete(this.baseUrl + "/users/3").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, userToken))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.FORBIDDEN))
                 .andExpect(jsonPath("$.message").value("No permission"))

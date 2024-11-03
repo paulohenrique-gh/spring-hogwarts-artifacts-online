@@ -228,7 +228,7 @@ public class WizardControllerIntegrationTest {
 
     @Test
     @DisplayName("Check delete wizard with valid Id (DELETE)")
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     void testDeleteWizardSuccess() throws Exception {
         this.mockMvc.perform(delete(this.baseUrl + "/wizards/1").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
                 .andExpect(jsonPath("$.flag").value(true))
