@@ -99,6 +99,12 @@ public class WizardControllerIntegrationTest {
                 .andExpect(jsonPath("$.data.id").value(4))
                 .andExpect(jsonPath("$.data.name").value("New Wizard"))
                 .andExpect(jsonPath("$.data.numberOfArtifacts").value(0));
+
+        this.mockMvc.perform(get(this.baseUrl + "/wizards").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Find All Success"))
+                .andExpect(jsonPath("$.data", Matchers.hasSize(4)));
     }
 
     @Test
