@@ -130,6 +130,7 @@ public class WizardControllerIntegrationTest {
 
     @Test
     @DisplayName("Check update wizard with valid input (PUT)")
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     void testUpdateWizardSuccess() throws Exception {
         WizardDto w = new WizardDto(1, "Albus Dumbledore - updated", null);
 
