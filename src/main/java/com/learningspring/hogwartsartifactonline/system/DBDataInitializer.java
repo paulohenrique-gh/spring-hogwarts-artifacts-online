@@ -3,14 +3,15 @@ package com.learningspring.hogwartsartifactonline.system;
 import com.learningspring.hogwartsartifactonline.artifact.Artifact;
 import com.learningspring.hogwartsartifactonline.artifact.ArtifactRepository;
 import com.learningspring.hogwartsartifactonline.hogwartsuser.HogwartsUser;
-import com.learningspring.hogwartsartifactonline.hogwartsuser.UserRepository;
 import com.learningspring.hogwartsartifactonline.hogwartsuser.UserService;
 import com.learningspring.hogwartsartifactonline.wizard.Wizard;
 import com.learningspring.hogwartsartifactonline.wizard.WizardRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("dev")
 public class DBDataInitializer implements CommandLineRunner {
 
     private final ArtifactRepository artifactRepository;
