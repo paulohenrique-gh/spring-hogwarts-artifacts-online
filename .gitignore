@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+/docker/grafana/csv/
+/docker/grafana/pdf/
+/docker/grafana/plugins/
+/docker/grafana/png/
+/docker/grafana/grafana.db
