@@ -1,8 +1,17 @@
 package com.learningspring.hogwartsartifactonline.artifact;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.learningspring.hogwartsartifactonline.artifact.dto.ArtifactDto;
 import com.learningspring.hogwartsartifactonline.artifact.utils.IdWorker;
+import com.learningspring.hogwartsartifactonline.client.ai.chat.ChatClient;
+import com.learningspring.hogwartsartifactonline.client.ai.chat.dto.ChatRequest;
+import com.learningspring.hogwartsartifactonline.client.ai.chat.dto.ChatResponse;
+import com.learningspring.hogwartsartifactonline.client.ai.chat.dto.Choice;
+import com.learningspring.hogwartsartifactonline.client.ai.chat.dto.Message;
 import com.learningspring.hogwartsartifactonline.system.exception.ObjectNotFoundException;
 import com.learningspring.hogwartsartifactonline.wizard.Wizard;
+import com.learningspring.hogwartsartifactonline.wizard.dto.WizardDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +41,9 @@ class ArtifactServiceTest {
 
     @Mock
     IdWorker idWorker;
+
+    @Mock
+    ChatClient chatClient;
 
     @InjectMocks
     ArtifactService artifactService;
@@ -217,5 +229,38 @@ class ArtifactServiceTest {
 
         // Then
         verify(this.artifactRepository, times(1)).findById("1250808601744904192");
+    }
+
+    @Test
+    void testSummarizeSuccess() throws JsonProcessingException {
+        // Given
+        WizardDto wizardDto = new WizardDto(1, "Albus Dumbledore", 2);
+        List<ArtifactDto> artifactDtos = List.of(
+                new ArtifactDto("1250808601744904191", "Deluminator", "A Deluminator is a device invented by Albus Dumbledore that resembles a cigarette lighter. It is used to remove or absorb (as well as return) the light from any light source to provide cover to the user.", "ImageUrl", wizardDto),
+                new ArtifactDto("1250808601744904193", "Elder Wand", "The Elder Wand, known throughout history as the Deathstick or the Wand of Destiny, is an extremely powerful wand made of elder wood with a core of Thestral tail hair.", "ImageUrl", wizardDto)
+        );
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonArray = objectMapper.writeValueAsString(artifactDtos);
+
+        List<Message> messages = List.of(
+                new Message("system", "Your task is to generate a short summary of a given JSON array in at most 100 words. The summary must include the number of artifacts, each artifact's description, and the ownership information. Don't mention that the summary is from a given JSON array."),
+                new Message("user", jsonArray)
+        );
+
+        ChatRequest chatRequest = new ChatRequest("llama3-8b-8192", messages);
+
+        ChatResponse chatResponse = new ChatResponse(List.of(
+                new Choice(0, new Message("assistant", "A summary of two artifacts owned by Albus Dumbledore"))
+        ));
+
+        given(this.chatClient.generate(chatRequest)).willReturn(chatResponse);
+
+        // When
+        String summary = this.artifactService.summarize(artifactDtos);
+
+        // Then
+        assertThat(summary).isEqualTo("A summary of two artifacts owned by Albus Dumbledore");
+        verify(this.chatClient, times(1)).generate(chatRequest);
     }
 }

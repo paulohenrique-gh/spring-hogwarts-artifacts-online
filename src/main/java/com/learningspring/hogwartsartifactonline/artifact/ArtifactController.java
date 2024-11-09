@@ -1,5 +1,6 @@
 package com.learningspring.hogwartsartifactonline.artifact;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.learningspring.hogwartsartifactonline.artifact.converter.ArtifactDtoToArtifactConverter;
 import com.learningspring.hogwartsartifactonline.artifact.converter.ArtifactToArtifactDtoConverter;
 import com.learningspring.hogwartsartifactonline.artifact.dto.ArtifactDto;
@@ -70,5 +71,17 @@ public class ArtifactController {
     public Result deleteArtifact(@PathVariable String artifactId) {
         this.artifactService.delete(artifactId);
         return new Result(true, StatusCode.SUCCESS, "Delete Success");
+    }
+
+    @GetMapping("/summary")
+    public Result summarizeArtifacts() throws JsonProcessingException {
+        List<ArtifactDto> artifactDtos = this.artifactService.findAll()
+                .stream()
+                .map(this.artifactToArtifactDtoConverter::convert)
+                .toList();
+
+        String summary = this.artifactService.summarize(artifactDtos);
+
+        return new Result(true, StatusCode.SUCCESS, "Summarize Success", summary);
     }
 }
