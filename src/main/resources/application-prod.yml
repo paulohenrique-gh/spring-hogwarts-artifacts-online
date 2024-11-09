@@ -12,3 +12,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none # Turn off the DDL auto generation
+ai:
+  groq:
+    endpoint: ${AI_GROQ_ENDPOINT:https://api.groq.com/openai/v1/chat/completions} # environment variable with default value
+    api-key: ${ai-groq-api-key:your-groq-api-key} # environment variable with default value

@@ -5,3 +5,7 @@ spring:
     password:
   jpa:
     show-sql: true
+ai:
+  groq:
+    endpoint: ${AI_GROQ_ENDPOINT:https://api.groq.com/openai/v1/chat/completions} # environment variable with default value
+    api-key: ${AI_GROQ_API_KEY:YOUR_API_KEY} # environment variable with default value

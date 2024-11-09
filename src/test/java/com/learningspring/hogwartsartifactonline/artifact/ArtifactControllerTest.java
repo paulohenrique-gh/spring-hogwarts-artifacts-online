@@ -1,5 +1,6 @@
 package com.learningspring.hogwartsartifactonline.artifact;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.learningspring.hogwartsartifactonline.artifact.dto.ArtifactDto;
 import com.learningspring.hogwartsartifactonline.system.StatusCode;
@@ -246,6 +247,19 @@ class ArtifactControllerTest {
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
                 .andExpect(jsonPath("$.message").value("Could not find artifact with Id 1250808601744904191 :("))
                 .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    void testSummarizeArtifactsSuccess() throws Exception {
+        // Given
+        given(this.artifactService.summarize(Mockito.anyList())).willReturn("The summary includes six artifacts, owned by three different wizards");
+
+        // When and Then
+        this.mockMvc.perform(get(this.baseUrl + "/artifacts/summary").accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Summarize Success"))
+                .andExpect(jsonPath("$.data").value("The summary includes six artifacts, owned by three different wizards"));
     }
 }
 
