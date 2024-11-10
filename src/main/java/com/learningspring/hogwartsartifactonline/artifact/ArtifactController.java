@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.learningspring.hogwartsartifactonline.artifact.converter.ArtifactDtoToArtifactConverter;
 import com.learningspring.hogwartsartifactonline.artifact.converter.ArtifactToArtifactDtoConverter;
 import com.learningspring.hogwartsartifactonline.artifact.dto.ArtifactDto;
+import com.learningspring.hogwartsartifactonline.client.imagestorage.ImageStorageClient;
 import com.learningspring.hogwartsartifactonline.system.Result;
 import com.learningspring.hogwartsartifactonline.system.StatusCode;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -11,7 +12,10 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -27,14 +31,18 @@ public class ArtifactController {
 
     private final MeterRegistry meterRegistry;
 
+    private final ImageStorageClient imageStorageClient;
+
     public ArtifactController(ArtifactService artifactService,
             ArtifactToArtifactDtoConverter artifactToArtifactDtoConverter,
             ArtifactDtoToArtifactConverter artifactDtoToArtifactConverter,
-            MeterRegistry meterRegistry) {
+            MeterRegistry meterRegistry,
+            ImageStorageClient imageStorageClient) {
         this.artifactService = artifactService;
         this.artifactToArtifactDtoConverter = artifactToArtifactDtoConverter;
         this.artifactDtoToArtifactConverter = artifactDtoToArtifactConverter;
         this.meterRegistry = meterRegistry;
+        this.imageStorageClient = imageStorageClient;
     }
 
     @GetMapping("/{artifactId}")
@@ -94,5 +102,14 @@ public class ArtifactController {
         Page<ArtifactDto> artifactDtoPage = artifactPage.map(this.artifactToArtifactDtoConverter::convert);
 
         return new Result(true, StatusCode.SUCCESS, "Search Success", artifactDtoPage);
+    }
+
+    @PostMapping("/images")
+    public Result uploadImage(@RequestParam String containerName, @RequestParam MultipartFile file) throws IOException {
+        try (InputStream inputStream = file.getInputStream()) {
+            String originalImageName = file.getOriginalFilename();
+            String imageUrl = this.imageStorageClient.uploadImage(containerName, originalImageName, inputStream, file.getSize());
+            return new Result(true, StatusCode.SUCCESS, "Upload Image Success", imageUrl);
+        }
     }
 }

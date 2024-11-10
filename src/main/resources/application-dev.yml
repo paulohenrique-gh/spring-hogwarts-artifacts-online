@@ -5,6 +5,15 @@ spring:
     password:
   jpa:
     show-sql: true
+  cloud:
+    azure:
+      storage:
+        account-name: ${AZURE_STORAGE_ACCOUNT_NAME:YOUR_STORAGE_ACCOUNT_NAME} # environment variable with default value
+        account-key: ${AZURE_STORAGE_ACCOUNT_KEY:YOUR_STORAGE_ACCOUNT_KEY} # environment variable with default value
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 20MB
 ai:
   groq:
     endpoint: ${AI_GROQ_ENDPOINT:https://api.groq.com/openai/v1/chat/completions} # environment variable with default value
