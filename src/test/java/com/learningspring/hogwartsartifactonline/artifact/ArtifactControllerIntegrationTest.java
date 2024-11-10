@@ -1,5 +1,6 @@
 package com.learningspring.hogwartsartifactonline.artifact;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.learningspring.hogwartsartifactonline.system.StatusCode;
 import org.hamcrest.Matchers;
@@ -19,6 +20,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -219,5 +225,50 @@ public class ArtifactControllerIntegrationTest {
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
                 .andExpect(jsonPath("$.message").value("Could not find artifact with Id 1 :("))
                 .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    @DisplayName("Check find artifact by description (GET)")
+    void testFindArtifactsByDescription() throws Exception {
+        // Given
+        Map<String, String> searchCriteria = new HashMap<>();
+        searchCriteria.put("description", "Hogwarts");
+        String json = this.objectMapper.writeValueAsString(searchCriteria);
+
+        MultiValueMap<String, String> requestParams = new LinkedMultiValueMap<>();
+        requestParams.add("page", "0");
+        requestParams.add("size", "2");
+        requestParams.add("sort", "name,asc");
+
+        // When and then
+        this.mockMvc.perform(post(this.baseUrl + "/artifacts/search").contentType(MediaType.APPLICATION_JSON).content(json).params(requestParams).accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Search Success"))
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(2)));
+
+    }
+
+    @Test
+    @DisplayName("Check find artifact by name and description (GET)")
+    void testFindArtifactsByNameAndDescription() throws Exception {
+        // Given
+        Map<String, String> searchCriteria = new HashMap<>();
+        searchCriteria.put("description", "Hogwarts");
+        searchCriteria.put("name", "Sword");
+        String json = this.objectMapper.writeValueAsString(searchCriteria);
+
+        MultiValueMap<String, String> requestParams = new LinkedMultiValueMap<>();
+        requestParams.add("page", "0");
+        requestParams.add("size", "2");
+        requestParams.add("sort", "name,asc");
+
+        // When and then
+        this.mockMvc.perform(post(this.baseUrl + "/artifacts/search").contentType(MediaType.APPLICATION_JSON).content(json).params(requestParams).accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Search Success"))
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(1)));
+
     }
 }
