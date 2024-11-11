@@ -81,8 +81,9 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("Admin role: Check get user by id (GET)")
-    void testFindUserByIdSuccess() throws Exception {
+    @DisplayName("Admin role: Check get any user by id (GET)")
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testFindUserByIdWithAdminAccessingAnyUsersInfo() throws Exception {
         this.mockMvc.perform(get(this.baseUrl + "/users/2").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.adminToken))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
@@ -91,6 +92,41 @@ public class UserControllerIntegrationTest {
                 .andExpect(jsonPath("$.data.username").value("eric"))
                 .andExpect(jsonPath("$.data.enabled").value(true))
                 .andExpect(jsonPath("$.data.roles").value("user"));
+    }
+
+    @Test
+    @DisplayName("User role: Check get own user info by id (GET)")
+    void testFindUserByIdWithUserAccessingOwnInfo() throws Exception {
+        ResultActions userResultActions = this.mockMvc.perform(post(this.baseUrl + "/users/login").with(httpBasic("eric", "654321")));
+        MvcResult userMvcResult = userResultActions.andDo(print()).andReturn();
+        String userContentAsString = userMvcResult.getResponse().getContentAsString();
+        JSONObject userJson = new JSONObject(userContentAsString);
+        String userToken = "Bearer " + userJson.getJSONObject("data").getString("token");
+
+        this.mockMvc.perform(get(this.baseUrl + "/users/2").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, userToken))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Find One Success"))
+                .andExpect(jsonPath("$.data.id").value(2))
+                .andExpect(jsonPath("$.data.username").value("eric"))
+                .andExpect(jsonPath("$.data.enabled").value(true))
+                .andExpect(jsonPath("$.data.roles").value("user"));
+    }
+
+    @Test
+    @DisplayName("User role: Check get other user's info by id (GET)")
+    void testFindUserByIdWithUserAccessingAnotherUsersInfo() throws Exception {
+        ResultActions userResultActions = this.mockMvc.perform(post(this.baseUrl + "/users/login").with(httpBasic("eric", "654321")));
+        MvcResult userMvcResult = userResultActions.andDo(print()).andReturn();
+        String userContentAsString = userMvcResult.getResponse().getContentAsString();
+        JSONObject userJson = new JSONObject(userContentAsString);
+        String userToken = "Bearer " + userJson.getJSONObject("data").getString("token");
+
+        this.mockMvc.perform(get(this.baseUrl + "/users/1").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, userToken))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.FORBIDDEN))
+                .andExpect(jsonPath("$.message").value("No permission"))
+                .andExpect(jsonPath("$.data").value("Access Denied"));
     }
 
     @Test
@@ -204,9 +240,9 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("Admin role: Check update user with valid input (PUT)")
+    @DisplayName("Admin role: Check update any user with valid input (PUT)")
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void testUpdateUserSuccess() throws Exception {
+    void testUpdateUserWithAdminUpdatingAnyUsersInfo() throws Exception {
         UserDto userDto = new UserDto(null, "tom-update", true, "user");
 
         String json = this.objectMapper.writeValueAsString(userDto);
@@ -263,6 +299,51 @@ public class UserControllerIntegrationTest {
         String json = this.objectMapper.writeValueAsString(userDto);
 
         this.mockMvc.perform(put(this.baseUrl + "/users/3").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, userToken))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.FORBIDDEN))
+                .andExpect(jsonPath("$.message").value("No permission"))
+                .andExpect(jsonPath("$.data").value("Access Denied"));
+    }
+
+    @Test
+    @DisplayName("User role: Check update own user with valid input (PUT)")
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    void testUpdateUserWithUserUpdatingOwnInfo() throws Exception {
+        ResultActions userResultActions = this.mockMvc.perform(post(this.baseUrl + "/users/login").with(httpBasic("eric", "654321")));
+        MvcResult userMvcResult = userResultActions.andDo(print()).andReturn();
+        String userContentAsString = userMvcResult.getResponse().getContentAsString();
+        JSONObject userJson = new JSONObject(userContentAsString);
+        String userToken = "Bearer " + userJson.getJSONObject("data").getString("token");
+
+        UserDto userDto = new UserDto(null, "eric123", true, "user");
+
+        String hogwartsUserJson = this.objectMapper.writeValueAsString(userDto);
+
+        this.mockMvc.perform(put(this.baseUrl + "/users/2").contentType(MediaType.APPLICATION_JSON).content(hogwartsUserJson).accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, userToken))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Update Success"))
+                .andExpect(jsonPath("$.data.id").value(2))
+                .andExpect(jsonPath("$.data.username").value("eric123"))
+                .andExpect(jsonPath("$.data.enabled").value(true))
+                .andExpect(jsonPath("$.data.roles").value("user"));
+    }
+
+    @Test
+    @DisplayName("User role: Check update another user with valid input (PUT)")
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    void testUpdateUserWithUserUpdatingAnotherUsersInfo() throws Exception {
+        ResultActions userResultActions = this.mockMvc.perform(post(this.baseUrl + "/users/login").with(httpBasic("eric", "654321")));
+        MvcResult userMvcResult = userResultActions.andDo(print()).andReturn();
+        String userContentAsString = userMvcResult.getResponse().getContentAsString();
+        JSONObject userJson = new JSONObject(userContentAsString);
+        String userToken = "Bearer " + userJson.getJSONObject("data").getString("token");
+
+        UserDto userDto = new UserDto(null, "tom123", false, "user");
+
+        String hogwartsUserJson = this.objectMapper.writeValueAsString(userDto);
+
+        this.mockMvc.perform(put(this.baseUrl + "/users/3").contentType(MediaType.APPLICATION_JSON).content(hogwartsUserJson).accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, userToken))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.FORBIDDEN))
                 .andExpect(jsonPath("$.message").value("No permission"))
